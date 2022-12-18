@@ -22,16 +22,13 @@ text.pack()
 key_buffer = str()
 
 class Operations:
-    def __init__(self, key_buffer):
-        self.key_buffer = key_buffer
-
-    def comb(self, n, r):
-        return factorial(n) / (factorial(r) * factorial(n - r))
-
-    def perm(self, n, r):
-        return factorial(n) / factorial(n - r)
+    def __init__(self, key_buffer): self.key_buffer = key_buffer
 
     '''
+    def comb(self, n, r): return factorial(n) / (factorial(r) * factorial(n - r))
+
+    def perm(self, n, r): return factorial(n) / factorial(n - r)
+
     def check_continuity(self, func : callable, lim, symbol) -> bool | None: # python >= 3.10
         return limit(func, symbol, lim).is_real and not func.has(zoo, nan)
 
@@ -40,8 +37,7 @@ class Operations:
     '''
 
 class Buttons:
-    def __init__(self, key_buffer):
-        self.key_buffer = key_buffer
+    def __init__(self, key_buffer): self.key_buffer = key_buffer
 
     def basic_operation(self, symbol):
         symbols = ["*", "/", "+", "-"]
@@ -80,150 +76,196 @@ class Buttons:
 
     def dot(self):
         if "." not in self.key_buffer:
-            if len(self.key_buffer) == 0:
-                self.a(0)
+            if len(self.key_buffer) == 0: self.a(0)
             self.key_buffer += "."
             text.insert(tk.END, ".")
 
     def sign(self):
         if self.key_buffer.startswith("-"):
             self.key_buffer = self.key_buffer[1:]
-            text.delete("1.0")
+            text.delete("2.0")
         else:
-            text.insert('1.0', "-")
+            text.insert('2.0', "-")
             self.key_buffer = "-" + self.key_buffer
 
     def a_function(self, a, b):
-        text.insert(tk.END, f"{a}(")
+        text.insert(tk.END.replace('1.', '2.'), f"{a}(")
         self.key_buffer += f"{b}("
 
-    def plus(self):
-        self.basic_operation("+")
+    def plus(self): self.basic_operation("+")
 
-    def minus(self):
-        self.basic_operation("-")
+    def minus(self): self.basic_operation("-")
 
-    def div(self):
-        self.basic_operation("/")
+    def div(self): self.basic_operation("/")
 
-    def mult(self):
-        self.basic_operation("*")
+    def mult(self): self.basic_operation("*")
 
-    def sqrt(self):
-        self.a_function("√", "sqrt")
+    def sqrt(self): self.a_function("√", "sqrt")
 
-    def ln(self):
-        self.a_function("ln", "ln")
+    def ln(self): self.a_function("ln", "ln")
 
-    def log(self):
-        self.a_function("log", "log")
+    def log(self): self.a_function("log", "log")
 
-    def fac(self):
-        self.a_function("factorial", "factorial")
+    def fac(self): self.a_function("factorial", "factorial")
 
     def _pow(self):
         if len(self.key_buffer) == 0:
-            text.insert(tk.END, "0")
+            text.insert(tk.END.replace('1', '2'), "0")
             self.key_buffer += "0"
-        text.insert(tk.END, "^")
+        text.insert(tk.END.replace('1', '2'), "^")
         self.key_buffer += "**"
 
     # mark
-    global senabled, henabled
+    global senabled, henabled, deg
     senabled = False
     henabled = False
+    deg = False
 
     def shift(self):
-        global senabled
-        senabled = True
-        return senabled
+        if '[s]' in self.key_buffer:
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
+            global senabled
+            senabled = False
+            return senabled
+        else:
+            text.insert('1.0', '[s]')
+            self.key_buffer = "[s]" + self.key_buffer
+            senabled = True
+            return senabled
 
     def hyperbolic(self):
-        global henabled
-        henabled = True
-        return henabled
+        if '[h]' in self.key_buffer:
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
+            global henabled
+            henabled = False
+            return henabled
+        else:
+            text.insert('1.0', '[h]')
+            self.key_buffer = "[h]" + self.key_buffer
+            henabled = True
+            return henabled
+
+    def d2r(self):
+        if '[deg]' in self.key_buffer:
+            text.delete(f'1.{self.key_buffer.index("[deg]")}', f'1.{self.key_buffer.index("[deg]") + 5}')
+            self.key_buffer = self.key_buffer.replace('[deg]', '')
+            global deg
+            deg = False
+            return deg
+        else:
+            text.insert('1.0', '[deg]')
+            self.key_buffer = "[deg]" + self.key_buffer
+            deg = True
+            return deg
 
     def sin(self):
         global senabled, henabled
         if senabled and not henabled:
             self.a_function('arcsin', 'asin')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
             senabled = False
             return senabled
         elif henabled and not senabled:
             self.a_function('sinh', 'sinh')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             henabled = False
             return henabled
         elif senabled and henabled:
             self.a_function('arcsinh', 'asinh')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             senabled = False
             henabled = False
             return senabled, henabled
-        else:
-            self.a_function('sin', 'sin')
+        else: self.a_function('sin', 'sin')
 
     def cos(self):
         global senabled, henabled
         if senabled and not henabled:
             self.a_function('arccos', 'acos')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
             senabled = False
             return senabled
         elif henabled and not senabled:
             self.a_function('cosh', 'cosh')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             henabled = False
             return henabled
         elif senabled and henabled:
             self.a_function('arccosh', 'acosh')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             senabled = False
             henabled = False
             return senabled, henabled
-        else:
-            self.a_function('cos', 'cos')
+        else: self.a_function('cos', 'cos')
 
     def tan(self):
         global senabled, henabled
         if senabled and not henabled:
             self.a_function('arctan', 'atan')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
             senabled = False
             return senabled
         elif henabled and not senabled:
             self.a_function('tanh', 'tanh')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             henabled = False
             return henabled
         elif senabled and henabled:
             self.a_function('arctanh', 'atanh')
+            text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[s]', '')
+            text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+            self.key_buffer = self.key_buffer.replace('[h]', '')
             senabled = False
             henabled = False
             return senabled, henabled
-        else:
-            self.a_function('tan', 'tan')
+        else: self.a_function('tan', 'tan')
 
     def equals(self, print_res=True, plot=False):
         if len(self.key_buffer) == 0: return
-        if plot and print_res:
-            print_res = False
+        if plot and print_res: print_res = False
         try:
             print(key_buffer)
 
             x = Symbol("x")
-            r = eval(self.key_buffer)
 
-            def f(t : int):
-                return eval(str(r.subs(x, t)))
+            if senabled:
+                text.delete(f'1.{self.key_buffer.index("[s]")}', f'1.{self.key_buffer.index("[s]") + 3}')
+                self.key_buffer = self.key_buffer.replace('[s]', '')
+            if henabled:
+                text.delete(f'1.{self.key_buffer.index("[h]")}', f'1.{self.key_buffer.index("[h]") + 3}')
+                self.key_buffer = self.key_buffer.replace('[h]', '')
+            if deg: self.key_buffer = self.key_buffer.replace('[deg]', '')
+            r = eval(self.key_buffer)
+            
+            def f(t : int): return eval(str(r.subs(x, t)))
 
             if plot:
                 xpoints = list(linspace(-5, 5, 100))
                 y = []
 
-                for i in xpoints:
-                    y.append(N(f(i)))
+                for i in xpoints: y.append(N(f(i)))
                 try:
                     i = 0
                     while i < len(y) - 1:
                         if y[i] != y[i] or not y[i].is_real:
                             y.pop(i)
                             xpoints.pop(i)
-                        else:
-                            i += 1
+                        else: i += 1
                 except TypeError: pass
 
                 fig = plt.figure()
@@ -237,11 +279,16 @@ class Buttons:
 
                 plt.plot(xpoints,y, 'r')
                 plt.show()
-
-            if print_res: text.insert(tk.END, f"\n= {Decimal(str(N(r))).normalize()}")
+            
+            if print_res and deg:
+                #text.insert(tk.END, f"\n= {Decimal(str(N(r) * 57.295779513)).normalize()}")
+                text.insert(tk.END, f"\n\n= {str(N(r) * 180 / pi)}")
+            else:
+                #text.insert(tk.END, f"\n= {Decimal(str(N(r))).normalize()}")
+                text.insert(tk.END, f"\n\n= {str(N(r))}")
         except SyntaxError:
             self.clear()
-            text.insert(tk.END, "Syntax Error: Missing one or more elements")
+            text.insert(tk.END, "Syntax Error: Missing elements or invalid syntax")
         except ZeroDivisionError:
             self.clear()
             text.insert(tk.END, "Math Error: Division by zero")
@@ -250,8 +297,7 @@ class Buttons:
             text.insert(tk.END, "Plot Error: Illegal elements (Constant or Invalid syntax)")
         if print_res: text.config(state=tk.DISABLED)
 
-    def plot(self):
-        self.equals(print_res=False, plot=True)
+    def plot(self): self.equals(print_res=False, plot=True)
 
     def delete(self):
         full_delete_kw = {
@@ -261,11 +307,12 @@ class Buttons:
             "ln(" : "ln(", "log(" : "log(", "√(" : "sqrt(", "abs(" : "abs(", "factorial(" : "factorial(",
             " + " : "+", " - " : "-", " × " : "*", " / " : "/"
             }
+        ignore = ['[s]', '[h]', '[deg]']
         for i in full_delete_kw.keys():
-            if text.get("1.0", "end-1c").endswith(i):
+            if text.get("1.0", "end-1c").endswith(ignore[0]) or text.get("1.0", "end-1c").endswith(ignore[1]) or text.get("1.0", "end-1c").endswith(ignore[2]) or text.get("1.0", "end-1c").endswith('\n'): return
+            elif text.get("1.0", "end-1c").endswith(i):
                 text.delete(f"end-{len(i) + 1}c", tk.END)
-                for j in full_delete_kw[i]:
-                    self.key_buffer = self.key_buffer[:-1]
+                for j in full_delete_kw[i]: self.key_buffer = self.key_buffer[:-1]
                 return
         text.delete("end-2c", tk.END)
         self.key_buffer = self.key_buffer[:-1]
@@ -274,6 +321,12 @@ class Buttons:
         text.config(state=tk.NORMAL)
         self.key_buffer = str()
         text.delete("1.0", tk.END)
+        text.insert('1.0', '\n')
+        global senabled, henabled, deg
+        senabled = False
+        henabled = False
+        deg = False
+        return senabled, henabled, deg
 
     def init(self):
         # colors for buttons
@@ -307,6 +360,7 @@ class Buttons:
         abs = partial(self.a, "abs(")
 
         button_shift = tk.Button(root, text="shift", command=self.shift, height=1, width=3, fg=yellow, bg=black, activeforeground=lyellow, activebackground=lblack)
+        button_deg = tk.Button(root, text='deg', command=self.d2r, height=1, width=3, fg=white, bg=black, activeforeground=lwhite, activebackground=lblack)
         button_hyp = tk.Button(root, text="hyp", command=self.hyperbolic, height=1, width=3, fg=blue, bg=black, activeforeground=lblue, activebackground=lblack)
         button_sine = tk.Button(root, text="sin", command=self.sin, height=1, width=3, fg=white, bg=black, activeforeground=lwhite, activebackground=lblack)
         button_cosine = tk.Button(root, text="cos", command=self.cos, height=1, width=3, fg=white, bg=black, activeforeground=lwhite, activebackground=lblack)
@@ -336,10 +390,11 @@ class Buttons:
         button_x = tk.Button(root, text="x", command=_x, height=1, width=3, fg=white, bg=black, activeforeground=lwhite, activebackground=lblack)
         
         button_shift.place(x=10, y=100)
-        button_hyp.place(x=70, y=100)
-        button_sine.place(x=130, y=100)
-        button_cosine.place(x=190, y=100)
-        button_tangent.place(x=250, y=100)
+        button_deg.place(x=70, y=100)
+        button_hyp.place(x=130, y=100)
+        button_sine.place(x=190, y=100)
+        button_cosine.place(x=250, y=100)
+        button_tangent.place(x=310, y=100)
 
         button_plus.place(x=190, y=140)
         button_ac.place(x=250, y=140)
@@ -370,6 +425,7 @@ class Buttons:
         button_plt.place(x=190, y=340)
 
 b = Buttons(key_buffer)
+text.insert('1.0', '\n')
 
 b.init()
 tk.mainloop()
